@@ -52,9 +52,16 @@ app.get('/api/health', (req, res) => {
 app.post('/api/notifications/send', async (req, res) => {
   try {
     console.log('Received notification request:', JSON.stringify(req.body, null, 2));
-    const { error, value } = notificationSchema.validate(req.body);
+    console.log('Available fields in request:', Object.keys(req.body));
+    
+    const { error, value } = notificationSchema.validate(req.body, { 
+      allowUnknown: true,
+      stripUnknown: true 
+    });
+    
     if (error) {
-      console.log('Validation error:', error.details[0].message);
+      console.log('Validation error details:', error.details);
+      console.log('Validation error message:', error.details[0].message);
       return res.status(400).json({ error: error.details[0].message });
     }
 
@@ -139,8 +146,17 @@ app.post('/api/notifications/send', async (req, res) => {
 // Send notification to topic
 app.post('/api/notifications/send-to-topic', async (req, res) => {
   try {
-    const { error, value } = notificationSchema.validate(req.body);
+    console.log('Received topic notification request:', JSON.stringify(req.body, null, 2));
+    console.log('Available fields in topic request:', Object.keys(req.body));
+    
+    const { error, value } = notificationSchema.validate(req.body, { 
+      allowUnknown: true,
+      stripUnknown: true 
+    });
+    
     if (error) {
+      console.log('Topic validation error details:', error.details);
+      console.log('Topic validation error message:', error.details[0].message);
       return res.status(400).json({ error: error.details[0].message });
     }
 
