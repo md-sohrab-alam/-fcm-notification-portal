@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// For GitHub Pages deployment, we'll need to update this to your actual backend URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// Backend deployed to Render.com
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://homepage-https-md-sohrab-alam-github-io.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
