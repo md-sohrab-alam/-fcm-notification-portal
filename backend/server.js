@@ -19,9 +19,11 @@ admin.initializeApp({
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://md-sohrab-alam.github.io'] 
-    : ['http://localhost:3000'],
+  origin: [
+    'https://md-sohrab-alam.github.io',
+    'https://md-sohrab-alam.github.io/-fcm-notification-portal',
+    'http://localhost:3000'
+  ],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -51,7 +53,14 @@ const notificationSchema = Joi.object({
 // Routes
 app.get('/api/health', (req, res) => {
   console.log('Health check request received from:', req.headers.origin);
-  res.json({ status: 'OK', message: 'FCM Notification Portal Backend is running' });
+  console.log('Request headers:', req.headers);
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  res.json({ 
+    status: 'OK', 
+    message: 'FCM Notification Portal Backend is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // Test endpoint for validation
