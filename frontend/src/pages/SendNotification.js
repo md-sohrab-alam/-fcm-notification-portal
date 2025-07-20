@@ -11,7 +11,8 @@ const SendNotification = () => {
     data: {},
     sendType: 'tokens', // 'tokens' or 'topic'
     tokens: [''],
-    topic: ''
+    topic: '',
+    messageType: 'hybrid' // 'notification', 'data', or 'hybrid'
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -113,6 +114,7 @@ const SendNotification = () => {
       const payload = {
         title: formData.title.trim(),
         body: formData.body.trim(),
+        messageType: formData.messageType,
         ...(formData.imageUrl && { imageUrl: formData.imageUrl.trim() }),
         ...(Object.keys(formData.data).length > 0 && { data: formData.data })
       };
@@ -141,7 +143,8 @@ const SendNotification = () => {
         data: {},
         sendType: 'tokens',
         tokens: [''],
-        topic: ''
+        topic: '',
+        messageType: 'hybrid'
       });
 
     } catch (error) {
@@ -204,6 +207,59 @@ const SendNotification = () => {
               />
             </div>
             {errors.imageUrl && <p className="form-error">{errors.imageUrl}</p>}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Message Type *</label>
+            <div className="space-y-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="messageType"
+                  value="hybrid"
+                  checked={formData.messageType === 'hybrid'}
+                  onChange={(e) => handleInputChange('messageType', e.target.value)}
+                  className="text-primary-600"
+                />
+                <span className="flex items-center space-x-1">
+                  <Bell className="w-4 h-4" />
+                  <span>Hybrid (Recommended)</span>
+                  <span className="text-xs text-gray-500">- Shows notification + background processing</span>
+                </span>
+              </label>
+              
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="messageType"
+                  value="data"
+                  checked={formData.messageType === 'data'}
+                  onChange={(e) => handleInputChange('messageType', e.target.value)}
+                  className="text-primary-600"
+                />
+                <span className="flex items-center space-x-1">
+                  <Send className="w-4 h-4" />
+                  <span>Data Only</span>
+                  <span className="text-xs text-gray-500">- Background processing only, no system notification</span>
+                </span>
+              </label>
+              
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="messageType"
+                  value="notification"
+                  checked={formData.messageType === 'notification'}
+                  onChange={(e) => handleInputChange('messageType', e.target.value)}
+                  className="text-primary-600"
+                />
+                <span className="flex items-center space-x-1">
+                  <Bell className="w-4 h-4" />
+                  <span>Notification Only</span>
+                  <span className="text-xs text-gray-500">- System notification only, limited background processing</span>
+                </span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -351,7 +407,8 @@ const SendNotification = () => {
                 data: {},
                 sendType: 'tokens',
                 tokens: [''],
-                topic: ''
+                topic: '',
+                messageType: 'hybrid'
               });
               setErrors({});
             }}

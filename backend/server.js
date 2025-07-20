@@ -39,7 +39,8 @@ const notificationSchema = Joi.object({
   imageUrl: Joi.string().uri().optional(),
   data: Joi.object().optional(),
   topic: Joi.string().optional(),
-  tokens: Joi.array().items(Joi.string()).optional()
+  tokens: Joi.array().items(Joi.string()).optional(),
+  messageType: Joi.string().valid('notification', 'data', 'hybrid').default('hybrid')
 });
 
 // Routes
@@ -55,27 +56,66 @@ app.post('/api/notifications/send', async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const { title, body, imageUrl, data, tokens } = value;
+    const { title, body, imageUrl, data, tokens, messageType } = value;
     
     if (!tokens || tokens.length === 0) {
       return res.status(400).json({ error: 'At least one token is required' });
     }
 
-    const message = {
-      notification: {
-        title,
-        body,
-        ...(imageUrl && { image: imageUrl })
-      },
-      ...(data && { data }),
-      tokens
+    // Prepare data payload for background processing
+    const dataPayload = {
+      title: title,
+      body: body,
+      timestamp: Date.now(),
+      ...(imageUrl && { imageUrl: imageUrl }),
+      ...(data && { ...data })
     };
+
+    let message;
+    
+    switch (messageType) {
+      case 'notification':
+        // Only notification - shows system notification, limited background processing
+        message = {
+          notification: {
+            title,
+            body,
+            ...(imageUrl && { image: imageUrl })
+          },
+          data: dataPayload,
+          tokens
+        };
+        break;
+        
+      case 'data':
+        // Only data - no system notification, full background processing
+        message = {
+          data: dataPayload,
+          tokens
+        };
+        break;
+        
+      case 'hybrid':
+      default:
+        // Both notification and data - best for most use cases
+        message = {
+          notification: {
+            title,
+            body,
+            ...(imageUrl && { image: imageUrl })
+          },
+          data: dataPayload,
+          tokens
+        };
+        break;
+    }
 
     const response = await admin.messaging().sendMulticast(message);
     
     const results = {
       successCount: response.successCount,
       failureCount: response.failureCount,
+      messageType: messageType,
       responses: response.responses.map((resp, index) => ({
         token: tokens[index],
         success: resp.success,
@@ -102,27 +142,63 @@ app.post('/api/notifications/send-to-topic', async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const { title, body, imageUrl, data, topic } = value;
+    const { title, body, imageUrl, data, topic, messageType } = value;
     
     if (!topic) {
       return res.status(400).json({ error: 'Topic is required' });
     }
 
-    const message = {
-      notification: {
-        title,
-        body,
-        ...(imageUrl && { image: imageUrl })
-      },
-      ...(data && { data }),
-      topic
+    // Prepare data payload for background processing
+    const dataPayload = {
+      title: title,
+      body: body,
+      timestamp: Date.now(),
+      ...(imageUrl && { imageUrl: imageUrl }),
+      ...(data && { ...data })
     };
+
+    let message;
+    
+    switch (messageType) {
+      case 'notification':
+        message = {
+          notification: {
+            title,
+            body,
+            ...(imageUrl && { image: imageUrl })
+          },
+          data: dataPayload,
+          topic
+        };
+        break;
+        
+      case 'data':
+        message = {
+          data: dataPayload,
+          topic
+        };
+        break;
+        
+      case 'hybrid':
+      default:
+        message = {
+          notification: {
+            title,
+            body,
+            ...(imageUrl && { image: imageUrl })
+          },
+          data: dataPayload,
+          topic
+        };
+        break;
+    }
 
     const response = await admin.messaging().send(message);
     
     res.json({
       message: 'Notification sent to topic successfully',
-      messageId: response
+      messageId: response,
+      messageType: messageType
     });
 
   } catch (error) {
