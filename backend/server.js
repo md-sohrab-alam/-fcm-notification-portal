@@ -40,12 +40,36 @@ const notificationSchema = Joi.object({
   data: Joi.object().optional(),
   topic: Joi.string().optional(),
   tokens: Joi.array().items(Joi.string()).optional(),
-  messageType: Joi.string().valid('notification', 'data', 'hybrid').optional().default('hybrid')
-});
+  messageType: Joi.string().valid('notification', 'data', 'hybrid').optional()
+}).unknown(true);
 
 // Routes
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'FCM Notification Portal Backend is running' });
+});
+
+// Test endpoint for validation
+app.post('/api/test-validation', (req, res) => {
+  try {
+    console.log('Test validation request:', JSON.stringify(req.body, null, 2));
+    const { error, value } = notificationSchema.validate(req.body, { 
+      allowUnknown: true,
+      stripUnknown: true 
+    });
+    
+    if (error) {
+      console.log('Test validation error:', error.details);
+      return res.status(400).json({ error: error.details[0].message });
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Validation passed',
+      receivedData: value 
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Test validation failed' });
+  }
 });
 
 // Send notification to specific tokens
