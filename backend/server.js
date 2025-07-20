@@ -10,11 +10,17 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Initialize Firebase Admin
-const serviceAccount = require('./firebase-service-account.json');
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: process.env.FIREBASE_DATABASE_URL
-});
+try {
+  const serviceAccount = require('./firebase-service-account.json');
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: process.env.FIREBASE_DATABASE_URL
+  });
+  console.log('Firebase Admin initialized successfully');
+} catch (error) {
+  console.error('Error initializing Firebase Admin:', error);
+  // Continue without Firebase for health checks
+}
 
 // Middleware
 app.use(helmet());
@@ -59,7 +65,15 @@ app.get('/api/health', (req, res) => {
     status: 'OK', 
     message: 'FCM Notification Portal Backend is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    firebaseInitialized: admin.apps.length > 0
+  });
+});
+
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'Backend is working!',
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -161,6 +175,10 @@ app.post('/api/notifications/send', async (req, res) => {
         break;
     }
 
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: 'Firebase Admin not initialized' });
+    }
+    
     const response = await admin.messaging().sendMulticast(message);
     
     const results = {
@@ -256,6 +274,10 @@ app.post('/api/notifications/send-to-topic', async (req, res) => {
         break;
     }
 
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: 'Firebase Admin not initialized' });
+    }
+    
     const response = await admin.messaging().send(message);
     
     res.json({
@@ -283,6 +305,10 @@ app.post('/api/topics/subscribe', async (req, res) => {
       return res.status(400).json({ error: 'Topic is required' });
     }
 
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: 'Firebase Admin not initialized' });
+    }
+    
     const response = await admin.messaging().subscribeToTopic(tokens, topic);
     
     res.json({
@@ -310,6 +336,10 @@ app.post('/api/topics/unsubscribe', async (req, res) => {
       return res.status(400).json({ error: 'Topic is required' });
     }
 
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: 'Firebase Admin not initialized' });
+    }
+    
     const response = await admin.messaging().unsubscribeFromTopic(tokens, topic);
     
     res.json({
