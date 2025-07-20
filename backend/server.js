@@ -40,7 +40,7 @@ const notificationSchema = Joi.object({
   data: Joi.object().optional(),
   topic: Joi.string().optional(),
   tokens: Joi.array().items(Joi.string()).optional(),
-  messageType: Joi.string().valid('notification', 'data', 'hybrid').default('hybrid')
+  messageType: Joi.string().valid('notification', 'data', 'hybrid').optional().default('hybrid')
 });
 
 // Routes
@@ -51,8 +51,10 @@ app.get('/api/health', (req, res) => {
 // Send notification to specific tokens
 app.post('/api/notifications/send', async (req, res) => {
   try {
+    console.log('Received notification request:', JSON.stringify(req.body, null, 2));
     const { error, value } = notificationSchema.validate(req.body);
     if (error) {
+      console.log('Validation error:', error.details[0].message);
       return res.status(400).json({ error: error.details[0].message });
     }
 
