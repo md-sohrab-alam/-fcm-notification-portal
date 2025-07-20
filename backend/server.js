@@ -448,4 +448,12 @@ app.use((req, res) => {
 
 app.listen(PORT, () => {
   console.log(`FCM Notification Portal Backend running on port ${PORT}`);
+  console.log(`Server started at: ${new Date().toISOString()}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Available endpoints:`);
+  console.log(`  - GET /`);
+  console.log(`  - GET /api/health`);
+  console.log(`  - GET /api/test`);
+  console.log(`  - GET /api/debug`);
+  console.log(`  - GET /api/routes`);
 }); 
