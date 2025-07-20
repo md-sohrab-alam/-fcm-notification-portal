@@ -72,6 +72,20 @@ const notificationSchema = Joi.object({
   messageType: Joi.string().valid('notification', 'data', 'hybrid', 'general').optional()
 }).unknown(true);
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'FCM Notification Portal Backend',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      test: '/api/test',
+      routes: '/api/routes'
+    }
+  });
+});
+
 // Routes
 app.get('/api/health', (req, res) => {
   console.log('Health check request received from:', req.headers.origin);
@@ -376,9 +390,37 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
+// List all available routes
+app.get('/api/routes', (req, res) => {
+  res.json({
+    availableRoutes: [
+      'GET /api/health',
+      'GET /api/test',
+      'GET /api/routes',
+      'POST /api/notifications/send',
+      'POST /api/notifications/send-to-topic',
+      'POST /api/topics/subscribe',
+      'POST /api/topics/unsubscribe',
+      'POST /api/test-validation'
+    ],
+    baseUrl: '/api',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+  console.log('404 - Route not found:', req.method, req.url);
+  res.status(404).json({ 
+    error: 'Route not found',
+    requestedUrl: req.url,
+    method: req.method,
+    availableRoutes: [
+      '/api/health',
+      '/api/test',
+      '/api/routes'
+    ]
+  });
 });
 
 app.listen(PORT, () => {
