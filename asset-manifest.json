@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/-fcm-notification-portal/static/css/main.d106a61a.css",
-    "main.js": "/-fcm-notification-portal/static/js/main.106b889a.js",
+    "main.js": "/-fcm-notification-portal/static/js/main.97a11aae.js",
     "index.html": "/-fcm-notification-portal/index.html",
     "main.d106a61a.css.map": "/-fcm-notification-portal/static/css/main.d106a61a.css.map",
-    "main.106b889a.js.map": "/-fcm-notification-portal/static/js/main.106b889a.js.map"
+    "main.97a11aae.js.map": "/-fcm-notification-portal/static/js/main.97a11aae.js.map"
   },
   "entrypoints": [
     "static/css/main.d106a61a.css",
-    "static/js/main.106b889a.js"
+    "static/js/main.97a11aae.js"
   ]
 }
