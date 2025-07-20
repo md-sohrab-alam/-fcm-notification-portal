@@ -96,13 +96,15 @@ app.post('/api/notifications/send', async (req, res) => {
       return res.status(400).json({ error: 'At least one token is required' });
     }
 
-    // Prepare data payload for background processing
+    // Prepare data payload for background processing - FCM requires all values to be strings
     const dataPayload = {
       title: title,
       body: body,
-      timestamp: Date.now(),
+      timestamp: Date.now().toString(),
       ...(imageUrl && { imageUrl: imageUrl }),
-      ...(data && { ...data })
+      ...(data && Object.fromEntries(
+        Object.entries(data).map(([key, value]) => [key, String(value)])
+      ))
     };
 
     let message;
@@ -192,13 +194,15 @@ app.post('/api/notifications/send-to-topic', async (req, res) => {
       return res.status(400).json({ error: 'Topic is required' });
     }
 
-    // Prepare data payload for background processing
+    // Prepare data payload for background processing - FCM requires all values to be strings
     const dataPayload = {
       title: title,
       body: body,
-      timestamp: Date.now(),
+      timestamp: Date.now().toString(),
       ...(imageUrl && { imageUrl: imageUrl }),
-      ...(data && { ...data })
+      ...(data && Object.fromEntries(
+        Object.entries(data).map(([key, value]) => [key, String(value)])
+      ))
     };
 
     let message;
