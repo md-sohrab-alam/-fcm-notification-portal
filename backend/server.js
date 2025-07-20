@@ -11,7 +11,22 @@ const PORT = process.env.PORT || 5000;
 
 // Initialize Firebase Admin
 try {
-  const serviceAccount = require('./firebase-service-account.json');
+  let serviceAccount;
+  
+  // Try to load from file first (for local development)
+  try {
+    serviceAccount = require('./firebase-service-account.json');
+    console.log('Firebase Admin initialized from file');
+  } catch (fileError) {
+    // If file not found, try environment variables (for production)
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      console.log('Firebase Admin initialized from environment variables');
+    } else {
+      throw new Error('No Firebase credentials found');
+    }
+  }
+  
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: process.env.FIREBASE_DATABASE_URL
@@ -19,6 +34,7 @@ try {
   console.log('Firebase Admin initialized successfully');
 } catch (error) {
   console.error('Error initializing Firebase Admin:', error);
+  console.log('Server will start without Firebase functionality');
   // Continue without Firebase for health checks
 }
 
