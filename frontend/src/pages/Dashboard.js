@@ -39,9 +39,12 @@ const Dashboard = () => {
 
   const checkServerHealth = async () => {
     try {
-      await healthAPI.checkHealth();
+      console.log('Checking server health...');
+      const response = await healthAPI.checkHealth();
+      console.log('Health check response:', response);
       setServerStatus('online');
     } catch (error) {
+      console.error('Health check error:', error);
       setServerStatus('offline');
       toast.error('Backend server is offline');
     }

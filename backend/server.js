@@ -40,11 +40,12 @@ const notificationSchema = Joi.object({
   data: Joi.object().optional(),
   topic: Joi.string().optional(),
   tokens: Joi.array().items(Joi.string()).optional(),
-  messageType: Joi.string().valid('notification', 'data', 'hybrid').optional()
+  messageType: Joi.string().valid('notification', 'data', 'hybrid', 'general').optional()
 }).unknown(true);
 
 // Routes
 app.get('/api/health', (req, res) => {
+  console.log('Health check request received from:', req.headers.origin);
   res.json({ status: 'OK', message: 'FCM Notification Portal Backend is running' });
 });
 
@@ -128,6 +129,7 @@ app.post('/api/notifications/send', async (req, res) => {
         };
         break;
         
+      case 'general':
       case 'hybrid':
       default:
         // Both notification and data - best for most use cases
@@ -221,6 +223,7 @@ app.post('/api/notifications/send-to-topic', async (req, res) => {
         };
         break;
         
+      case 'general':
       case 'hybrid':
       default:
         message = {
