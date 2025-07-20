@@ -13,16 +13,27 @@ const PORT = process.env.PORT || 5000;
 try {
   let serviceAccount;
   
+  console.log('Starting Firebase Admin initialization...');
+  console.log('FIREBASE_SERVICE_ACCOUNT exists:', !!process.env.FIREBASE_SERVICE_ACCOUNT);
+  
   // Try to load from file first (for local development)
   try {
     serviceAccount = require('./firebase-service-account.json');
     console.log('Firebase Admin initialized from file');
   } catch (fileError) {
+    console.log('File not found, trying environment variables...');
     // If file not found, try environment variables (for production)
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-      console.log('Firebase Admin initialized from environment variables');
+      try {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        console.log('Firebase Admin initialized from environment variables');
+        console.log('Service account project_id:', serviceAccount.project_id);
+      } catch (parseError) {
+        console.error('Error parsing FIREBASE_SERVICE_ACCOUNT JSON:', parseError);
+        throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT JSON format');
+      }
     } else {
+      console.log('No FIREBASE_SERVICE_ACCOUNT environment variable found');
       throw new Error('No Firebase credentials found');
     }
   }
@@ -104,6 +115,18 @@ app.get('/api/test', (req, res) => {
   res.json({ 
     message: 'Backend is working!',
     timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/debug', (req, res) => {
+  res.json({
+    message: 'Debug information',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    firebaseServiceAccountExists: !!process.env.FIREBASE_SERVICE_ACCOUNT,
+    firebaseServiceAccountLength: process.env.FIREBASE_SERVICE_ACCOUNT ? process.env.FIREBASE_SERVICE_ACCOUNT.length : 0,
+    firebaseServiceAccountStart: process.env.FIREBASE_SERVICE_ACCOUNT ? process.env.FIREBASE_SERVICE_ACCOUNT.substring(0, 50) + '...' : 'NOT_FOUND',
+    allEnvVars: Object.keys(process.env).filter(key => key.includes('FIREBASE'))
   });
 });
 
